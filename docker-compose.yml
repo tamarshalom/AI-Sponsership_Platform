@@ -22,6 +22,9 @@ services:
     build:
       context: ./backend
     container_name: sponsorship-backend
+    # Loads OPENAI_API_KEY and other vars from disk (create backend/.env from .env.example first).
+    env_file:
+      - ./backend/.env
     environment:
       APP_NAME: Sponsorship Platform API
       APP_ENV: dev

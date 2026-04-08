@@ -1,5 +1,7 @@
 # Sponsorship Platform Monorepo
 
+Team workflow, env setup, and troubleshooting: see **[CONTRIBUTING.md](./CONTRIBUTING.md)**.
+
 Full-stack monorepo with:
 
 - `frontend`: Next.js (App Router), TypeScript, Tailwind, shadcn/ui baseline
@@ -22,6 +24,8 @@ Full-stack monorepo with:
 - (Optional local dev) Node.js 20+, Python 3.12+
 
 ## Quick Start (Docker)
+
+0. **Environment file (required):** copy `backend/.env.example` to `backend/.env` and set `OPENAI_API_KEY` (see [CONTRIBUTING.md](./CONTRIBUTING.md)).
 
 1. Start everything:
 
