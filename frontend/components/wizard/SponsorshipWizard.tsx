@@ -43,9 +43,23 @@ function scoreToPercent(score: number): number {
   return Math.round(Math.min(100, Math.max(0, score * 100)));
 }
 
+interface PastEvent {
+  name: string;
+  description: string;
+  attendees: string;
+}
+
+const EMPTY_EVENT: PastEvent = { name: "", description: "", attendees: "" };
+
 export function SponsorshipWizard() {
   const [step, setStep] = useState(1);
-  const [rawText, setRawText] = useState("");
+  const [clubName, setClubName] = useState("");
+  const [clubMission, setClubMission] = useState("");
+  const [university, setUniversity] = useState("");
+  const [memberCount, setMemberCount] = useState("");
+  const [pastEvents, setPastEvents] = useState<PastEvent[]>([
+    { ...EMPTY_EVENT }, { ...EMPTY_EVENT }, { ...EMPTY_EVENT },
+  ]);
   const [clubProfile, setClubProfile] = useState<ClubProfile | null>(null);
   const [matches, setMatches] = useState<MatchSponsorsResult[] | null>(null);
   const [selectedMatch, setSelectedMatch] = useState<MatchSponsorsResult | null>(
@@ -59,12 +73,31 @@ export function SponsorshipWizard() {
   const [analyzePhase, setAnalyzePhase] = useState<"profile" | "match">("profile");
   const [error, setError] = useState<string | null>(null);
 
+  function buildRawText(): string {
+    const lines: string[] = [];
+    lines.push(`Club Name: ${clubName.trim()}`);
+    lines.push(`Mission: ${clubMission.trim()}`);
+    lines.push(`University / Location: ${university.trim()}`);
+    if (memberCount.trim()) lines.push(`Number of Members: ${memberCount.trim()}`);
+    const filledEvents = pastEvents.filter((e) => e.name.trim());
+    if (filledEvents.length > 0) {
+      lines.push("\nPast Events:");
+      filledEvents.forEach((e, i) => {
+        lines.push(`  Event ${i + 1}: ${e.name.trim()}`);
+        if (e.description.trim()) lines.push(`  Description: ${e.description.trim()}`);
+        if (e.attendees.trim()) lines.push(`  Attendees: ${e.attendees.trim()}`);
+      });
+    }
+    return lines.join("\n");
+  }
+
   const runAnalysis = useCallback(async () => {
     setError(null);
     setStep(2);
     setAnalyzePhase("profile");
+    const composed = buildRawText();
     try {
-      const profile = await parseClubProfile(rawText.trim());
+      const profile = await parseClubProfile(composed);
       setClubProfile(profile);
       setAnalyzePhase("match");
       const result = await matchSponsors(profile);
@@ -75,7 +108,7 @@ export function SponsorshipWizard() {
       setError(e instanceof Error ? e.message : "Something went wrong.");
       setStep(1);
     }
-  }, [rawText]);
+  }, [clubName, clubMission, university, memberCount, pastEvents]);
 
   useEffect(() => {
     if (step !== 4 || !clubProfile || !selectedMatch) return;
@@ -139,7 +172,11 @@ export function SponsorshipWizard() {
     };
   }, [step, clubProfile, selectedMatch, eventIdeas, ideaIndex]);
 
-  const canSubmitIntake = rawText.trim().length >= 10;
+  const canSubmitIntake = clubName.trim().length > 0 && clubMission.trim().length > 0 && university.trim().length > 0;
+
+  function updatePastEvent(index: number, field: keyof PastEvent, value: string) {
+    setPastEvents((prev) => prev.map((e, i) => (i === index ? { ...e, [field]: value } : e)));
+  }
 
   return (
     <div className="mx-auto flex min-h-screen max-w-4xl flex-col px-4 pb-16 pt-10 md:px-8">
@@ -218,22 +255,99 @@ export function SponsorshipWizard() {
                     We use this to structure your profile and find matches.
                   </CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="space-y-2">
-                    <label htmlFor="intake" className="text-sm font-medium">
-                      About your club
-                    </label>
-                    <Textarea
-                      id="intake"
-                      placeholder="Example: We are the Robotics Club at State University. Our mission is to compete in FIRST and host outreach workshops for local high schools. We need funding for parts, travel, and venue space for our annual showcase..."
-                      value={rawText}
-                      onChange={(e) => setRawText(e.target.value)}
-                      className="min-h-[200px] resize-y"
-                    />
-                    <p className="text-xs text-muted-foreground">
-                      {rawText.trim().length}/∞ characters (minimum 10 for AI analysis)
-                    </p>
+                <CardContent className="space-y-5">
+                  <div className="space-y-4">
+                    <h3 className="text-sm font-semibold text-foreground">Club information</h3>
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <div className="space-y-1.5">
+                        <label htmlFor="clubName" className="text-sm font-medium">Club name <span className="text-destructive">*</span></label>
+                        <input
+                          id="clubName"
+                          type="text"
+                          placeholder="e.g. Robotics Club"
+                          value={clubName}
+                          onChange={(e) => setClubName(e.target.value)}
+                          className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        />
+                      </div>
+                      <div className="space-y-1.5">
+                        <label htmlFor="university" className="text-sm font-medium">University / location <span className="text-destructive">*</span></label>
+                        <input
+                          id="university"
+                          type="text"
+                          placeholder="e.g. State University, Boston"
+                          value={university}
+                          onChange={(e) => setUniversity(e.target.value)}
+                          className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        />
+                      </div>
+                    </div>
+                    <div className="space-y-1.5">
+                      <label htmlFor="clubMission" className="text-sm font-medium">Club mission <span className="text-destructive">*</span></label>
+                      <Textarea
+                        id="clubMission"
+                        placeholder="1–2 sentences describing your club's purpose and goals. e.g. We compete in FIRST Robotics and run outreach workshops for local high schools."
+                        value={clubMission}
+                        onChange={(e) => setClubMission(e.target.value)}
+                        className="min-h-[80px] resize-y"
+                      />
+                    </div>
+                    <div className="space-y-1.5 sm:w-1/2">
+                      <label htmlFor="memberCount" className="text-sm font-medium">Number of members</label>
+                      <input
+                        id="memberCount"
+                        type="number"
+                        min="1"
+                        placeholder="e.g. 45"
+                        value={memberCount}
+                        onChange={(e) => setMemberCount(e.target.value)}
+                        className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      />
+                    </div>
                   </div>
+
+                  <div className="space-y-4 border-t pt-5">
+                    <div>
+                      <h3 className="text-sm font-semibold text-foreground">Past events</h3>
+                      <p className="mt-0.5 text-xs text-muted-foreground">Up to 3 previous events. Used to inform sponsor matching and avoid duplicate ideas.</p>
+                    </div>
+                    {pastEvents.map((event, i) => (
+                      <div key={i} className="space-y-3 rounded-lg border border-border/60 p-4">
+                        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Event {i + 1}</p>
+                        <div className="space-y-1.5">
+                          <label className="text-sm font-medium">Event name</label>
+                          <input
+                            type="text"
+                            placeholder="e.g. Spring Robotics Showcase"
+                            value={event.name}
+                            onChange={(e) => updatePastEvent(i, "name", e.target.value)}
+                            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                          />
+                        </div>
+                        <div className="space-y-1.5">
+                          <label className="text-sm font-medium">Event description</label>
+                          <Textarea
+                            placeholder="Briefly describe what happened at this event."
+                            value={event.description}
+                            onChange={(e) => updatePastEvent(i, "description", e.target.value)}
+                            className="min-h-[64px] resize-y"
+                          />
+                        </div>
+                        <div className="space-y-1.5 sm:w-1/3">
+                          <label className="text-sm font-medium">Number of attendees</label>
+                          <input
+                            type="number"
+                            min="1"
+                            placeholder="e.g. 120"
+                            value={event.attendees}
+                            onChange={(e) => updatePastEvent(i, "attendees", e.target.value)}
+                            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
                   <Button
                     type="button"
                     disabled={!canSubmitIntake}
