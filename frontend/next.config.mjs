@@ -4,6 +4,16 @@ const backendInternalUrl =
 
 const nextConfig = {
   allowedDevOrigins: ["*.replit.dev", "*.kirk.replit.dev"],
+  /** When file watchers fail (e.g. EMFILE on macOS), use `npm run dev:poll` so routes compile. */
+  webpack(config, { dev }) {
+    if (dev && process.env.WATCHPACK_POLLING === "true") {
+      config.watchOptions = {
+        poll: 1000,
+        aggregateTimeout: 300,
+      };
+    }
+    return config;
+  },
   async rewrites() {
     return [
       {

@@ -45,7 +45,11 @@ class Sponsor(AppSchema):
     contact_email: Optional[str] = Field(default=None, alias="contactEmail")
     website_url: Optional[str] = Field(default=None, alias="websiteUrl")
     locations: Optional[List[str]] = None
-    metadata: Optional[Dict[str, Any]] = None
+    metadata: Optional[Dict[str, Any]] = Field(
+        default=None,
+        validation_alias="sponsor_metadata",
+        serialization_alias="metadata",
+    )
     created_at: datetime = Field(alias="createdAt")
     updated_at: datetime = Field(alias="updatedAt")
 

@@ -1,5 +1,5 @@
-import { SponsorshipWizard } from "@/components/wizard/SponsorshipWizard";
+import { SponsorshipLanding } from "@/components/landing/SponsorshipLanding";
 
 export default function HomePage() {
-  return <SponsorshipWizard />;
+  return <SponsorshipLanding />;
 }

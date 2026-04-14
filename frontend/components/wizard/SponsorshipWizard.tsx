@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Loader2, Sparkles, Mail, PartyPopper } from "lucide-react";
+import { SponsorMatchMark } from "@/components/brand/SponsorMatchMark";
 import type {
   ClubProfile,
   EmailPitchResponse,
@@ -38,6 +39,10 @@ const slide = {
 const transition = { duration: 0.38, ease: [0.22, 1, 0.36, 1] as const };
 
 const LUMA_CREATE_URL = "https://luma.com/create";
+
+/** Bold, readable inputs */
+const fieldClass =
+  "w-full rounded-xl border-2 border-input bg-background/80 px-3 py-2.5 text-sm transition-[border-color,box-shadow] placeholder:text-muted-foreground focus-visible:outline-none focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-primary/20";
 
 function scoreToPercent(score: number): number {
   return Math.round(Math.min(100, Math.max(0, score * 100)));
@@ -179,18 +184,27 @@ export function SponsorshipWizard() {
   }
 
   return (
-    <div className="mx-auto flex min-h-screen max-w-4xl flex-col px-4 pb-16 pt-10 md:px-8">
-      <header className="mb-10">
-        <p className="text-sm font-medium text-primary">Sponsorship workspace</p>
-        <h1 className="mt-1 text-3xl font-semibold tracking-tight md:text-4xl">
-          From pitch to partners
+    <div className="relative mx-auto flex min-h-screen max-w-5xl flex-col px-4 pb-20 pt-8 md:px-10">
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-x-0 top-0 h-2 bg-gradient-to-r from-primary via-secondary to-[hsl(320_90%_60%)] opacity-90"
+      />
+
+      <header className="mb-10 md:mb-12">
+        <div className="inline-flex items-center gap-2 rounded-full border-2 border-primary/25 bg-secondary/90 px-3 py-1.5 text-xs font-bold uppercase tracking-wider text-secondary-foreground shadow-sm">
+          <SponsorMatchMark size="sm" alt="" className="opacity-90" />
+          Club → sponsors → event → Luma
+        </div>
+        <h1 className="font-display mt-4 max-w-3xl text-4xl font-bold leading-[1.1] tracking-tight md:text-5xl">
+          <span className="text-gradient">From pitch</span>
+          <span className="text-foreground"> to partners</span>
         </h1>
-        <p className="mt-2 max-w-2xl text-muted-foreground">
-          Tell us about your club, match with sponsors, shape events, and prep
-          your outreach—step by step.
+        <p className="mt-3 max-w-2xl text-base text-muted-foreground md:text-lg">
+          Clear steps from intake to outreach. Tell us about your club—we&apos;ll
+          handle the match flow.
         </p>
 
-        <ol className="mt-8 flex flex-wrap gap-2">
+        <ol className="mt-8 flex flex-wrap gap-2.5 md:gap-3">
           {STEPS.map((label, i) => {
             const n = i + 1;
             const active = step === n;
@@ -204,19 +218,20 @@ export function SponsorshipWizard() {
                     if (n < step) setStep(n);
                   }}
                   className={cn(
-                    "flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors",
+                    "flex items-center gap-2 rounded-full border-2 px-3.5 py-2 text-xs font-semibold transition-all md:text-sm",
                     active &&
-                      "border-primary bg-primary/10 text-primary",
-                    done && !active && "border-border text-muted-foreground",
-                    !active && !done && "border-dashed border-border text-muted-foreground/70",
-                    n < step && "cursor-pointer hover:border-primary/50"
+                      "border-primary bg-primary text-primary-foreground shadow-md shadow-primary/30",
+                    done && !active && "border-primary/30 bg-primary/10 text-primary",
+                    !active && !done && "border-dashed border-border text-muted-foreground/80",
+                    n < step && "cursor-pointer hover:-translate-y-0.5 hover:border-primary/60"
                   )}
                 >
                   <span
                     className={cn(
-                      "flex h-5 w-5 items-center justify-center rounded-full text-[10px]",
-                      active && "bg-primary text-primary-foreground",
-                      done && "bg-primary/20 text-primary"
+                      "flex h-6 w-6 items-center justify-center rounded-full text-[11px] font-bold",
+                      active && "bg-primary-foreground/20 text-primary-foreground",
+                      done && !active && "bg-primary text-primary-foreground",
+                      !active && !done && "bg-muted text-muted-foreground"
                     )}
                   >
                     {done ? "✓" : n}
@@ -230,7 +245,7 @@ export function SponsorshipWizard() {
       </header>
 
       {error && (
-        <div className="mb-6 rounded-lg border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+        <div className="mb-6 rounded-2xl border-2 border-destructive/50 bg-destructive/10 px-4 py-3 text-sm font-medium text-destructive shadow-sm">
           {error}
         </div>
       )}
@@ -249,10 +264,12 @@ export function SponsorshipWizard() {
             >
               <Card>
                 <CardHeader>
-                  <CardTitle>Club intake</CardTitle>
-                  <CardDescription>
-                    Share your mission, goals, and what you need from sponsors.
-                    We use this to structure your profile and find matches.
+                  <CardTitle className="font-display text-2xl font-bold">
+                    Club intake
+                  </CardTitle>
+                  <CardDescription className="text-base">
+                    The more real detail you add—especially past events—the sharper
+                    your sponsor fit.
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-5">
@@ -267,7 +284,7 @@ export function SponsorshipWizard() {
                           placeholder="e.g. Robotics Club"
                           value={clubName}
                           onChange={(e) => setClubName(e.target.value)}
-                          className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                          className={fieldClass}
                         />
                       </div>
                       <div className="space-y-1.5">
@@ -278,7 +295,7 @@ export function SponsorshipWizard() {
                           placeholder="e.g. State University, Boston"
                           value={university}
                           onChange={(e) => setUniversity(e.target.value)}
-                          className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                          className={fieldClass}
                         />
                       </div>
                     </div>
@@ -301,7 +318,7 @@ export function SponsorshipWizard() {
                         placeholder="e.g. 45"
                         value={memberCount}
                         onChange={(e) => setMemberCount(e.target.value)}
-                        className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                        className={fieldClass}
                       />
                     </div>
                   </div>
@@ -312,8 +329,13 @@ export function SponsorshipWizard() {
                       <p className="mt-0.5 text-xs text-muted-foreground">Up to 3 previous events. Used to inform sponsor matching and avoid duplicate ideas.</p>
                     </div>
                     {pastEvents.map((event, i) => (
-                      <div key={i} className="space-y-3 rounded-lg border border-border/60 p-4">
-                        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Event {i + 1}</p>
+                      <div
+                        key={i}
+                        className="space-y-3 rounded-2xl border-2 border-primary/15 bg-gradient-to-br from-muted/40 to-background p-4 shadow-sm"
+                      >
+                        <p className="text-xs font-bold uppercase tracking-wide text-primary/80">
+                          Event {i + 1}
+                        </p>
                         <div className="space-y-1.5">
                           <label className="text-sm font-medium">Event name</label>
                           <input
@@ -321,7 +343,7 @@ export function SponsorshipWizard() {
                             placeholder="e.g. Spring Robotics Showcase"
                             value={event.name}
                             onChange={(e) => updatePastEvent(i, "name", e.target.value)}
-                            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                            className={fieldClass}
                           />
                         </div>
                         <div className="space-y-1.5">
@@ -341,7 +363,7 @@ export function SponsorshipWizard() {
                             placeholder="e.g. 120"
                             value={event.attendees}
                             onChange={(e) => updatePastEvent(i, "attendees", e.target.value)}
-                            className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                            className={fieldClass}
                           />
                         </div>
                       </div>
@@ -383,8 +405,8 @@ export function SponsorshipWizard() {
                   </div>
                 </div>
               </div>
-              <div className="flex items-center gap-2 text-lg font-medium">
-                <Sparkles className="h-5 w-5 text-primary" />
+              <div className="flex items-center gap-2 font-display text-xl font-bold md:text-2xl">
+                <Sparkles className="h-6 w-6 text-primary" />
                 AI analyzing your club
               </div>
               <p className="mt-2 max-w-md text-center text-sm text-muted-foreground">
@@ -420,10 +442,12 @@ export function SponsorshipWizard() {
               className="space-y-6"
             >
               <div>
-                <h2 className="text-xl font-semibold">Sponsor matches</h2>
-                <p className="text-sm text-muted-foreground">
-                  Ranked by semantic fit. Select a sponsor to build event ideas and
-                  outreach.
+                <h2 className="font-display text-2xl font-bold tracking-tight md:text-3xl">
+                  Sponsor matches
+                </h2>
+                <p className="mt-1 text-sm text-muted-foreground md:text-base">
+                  Ranked by fit. Pick one—we&apos;ll spin up ideas + email for that
+                  partner.
                 </p>
               </div>
               <div className="grid gap-4 sm:grid-cols-2">
@@ -439,10 +463,10 @@ export function SponsorshipWizard() {
                       whileTap={{ scale: 0.99 }}
                       onClick={() => setSelectedMatch(m)}
                       className={cn(
-                        "text-left rounded-xl border p-5 transition-shadow",
+                        "text-left rounded-2xl border-2 bg-background/60 p-5 transition-all hover:-translate-y-0.5",
                         selected
-                          ? "border-primary ring-2 ring-primary/30 shadow-md"
-                          : "border-border hover:border-primary/40"
+                          ? "border-primary shadow-lg shadow-primary/20 ring-2 ring-primary/25"
+                          : "border-border/80 hover:border-primary/50 hover:shadow-md"
                       )}
                     >
                       <div className="flex items-start justify-between gap-3">
@@ -515,13 +539,15 @@ export function SponsorshipWizard() {
               className="space-y-6"
             >
               <div>
-                <h2 className="text-xl font-semibold">Event ideas & email</h2>
-                <p className="text-sm text-muted-foreground">
-                  Three AI-generated ideas for{" "}
-                  <span className="font-medium text-foreground">
+                <h2 className="font-display text-2xl font-bold tracking-tight md:text-3xl">
+                  Event ideas &amp; email
+                </h2>
+                <p className="mt-1 text-sm text-muted-foreground md:text-base">
+                  Three angles for{" "}
+                  <span className="font-semibold text-primary">
                     {selectedMatch?.sponsorName}
-                  </span>
-                  , plus a tailored pitch draft.
+                  </span>{" "}
+                  — plus a draft you can send as-is or tweak.
                 </p>
               </div>
 
@@ -639,10 +665,12 @@ export function SponsorshipWizard() {
               transition={transition}
               className="space-y-6"
             >
-              <Card className="overflow-hidden border-primary/20">
-                <div className="bg-gradient-to-r from-primary/10 to-transparent px-6 py-8">
+              <Card className="overflow-hidden border-2 border-primary/25">
+                <div className="bg-gradient-to-br from-primary/15 via-secondary/30 to-transparent px-6 py-8">
                   <PartyPopper className="mb-3 h-10 w-10 text-primary" />
-                  <CardTitle className="text-2xl">Ready to publish</CardTitle>
+                  <CardTitle className="font-display text-2xl md:text-3xl">
+                    Ready to publish
+                  </CardTitle>
                   <CardDescription className="mt-2 max-w-lg text-base">
                     Create your event on Luma to share registration, calendar
                     invites, and reminders—then send your outreach with the draft

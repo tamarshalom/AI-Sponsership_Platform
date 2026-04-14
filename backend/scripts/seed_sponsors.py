@@ -196,6 +196,42 @@ MOCK_SPONSORS = [
         "support_types": ["in-kind", "tools", "cash"],
         "locations": ["local"],
     },
+    {
+        "id": "sponsor-womens-health-alliance",
+        "name": "Women's Health Alliance",
+        "mission": "Advance education, advocacy, and equitable access in women's health.",
+        "description": "Supports campus awareness campaigns on reproductive health, menstrual disorders, and preventive care.",
+        "industries": ["women's health", "healthcare", "nonprofit"],
+        "support_types": ["grants", "speakers", "educational materials"],
+        "locations": ["national"],
+    },
+    {
+        "id": "sponsor-endometriosis-foundation",
+        "name": "Endometriosis Foundation Network",
+        "mission": "Increase awareness, early diagnosis, and care access for people with endometriosis.",
+        "description": "Funds student-led endometriosis education weeks, panel discussions, and clinician Q&A events.",
+        "industries": ["women's health", "medical advocacy", "public health"],
+        "support_types": ["grants", "speakers", "co-branded campaigns"],
+        "locations": ["national"],
+    },
+    {
+        "id": "sponsor-planned-parenthood-education",
+        "name": "Planned Parenthood Education",
+        "mission": "Expand access to reproductive healthcare education and community resources.",
+        "description": "Partners with student groups on sexual health workshops, screening awareness, and advocacy events.",
+        "industries": ["reproductive health", "public health", "healthcare"],
+        "support_types": ["speakers", "in-kind resources", "community outreach"],
+        "locations": ["regional"],
+    },
+    {
+        "id": "sponsor-cleo-wellness",
+        "name": "Cleo Wellness",
+        "mission": "Build better hormonal and menstrual health outcomes through education and care.",
+        "description": "Sponsors women's wellness clubs with menstrual health toolkits, webinars, and campus activations.",
+        "industries": ["femtech", "wellness", "women's health"],
+        "support_types": ["product", "cash", "educational content"],
+        "locations": ["national"],
+    },
 ]
 
 

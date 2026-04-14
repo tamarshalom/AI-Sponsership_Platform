@@ -25,6 +25,7 @@ from app.schemas import (
 )
 from app.services.sponsor_match_service import SponsorMatchService
 from app.services.sponsor_ingestion_service import SponsorIngestionService
+from app.services.web_sponsor_discovery_service import WebSponsorDiscoveryService
 from app.models import SponsorModel
 
 app = FastAPI(title=settings.app_name)
@@ -112,11 +113,31 @@ def parse_profile(payload: ProfileAgentRequest) -> ClubProfile:
 
 _match_service = SponsorMatchService()
 _ingestion_service = SponsorIngestionService()
+_web_discovery_service = WebSponsorDiscoveryService(_ingestion_service)
 
 
 @app.post("/match-sponsors", response_model=MatchSponsorsResponse)
 def match_sponsors(payload: ClubProfile, db: Session = Depends(get_db)) -> MatchSponsorsResponse:
-    return _match_service.match_top_sponsors(db, payload, limit=5)
+    result = _match_service.match_top_sponsors(db, payload, limit=5)
+    top_score = max((m.score for m in result.matches), default=0.0)
+
+    should_discover = (
+        settings.match_web_discovery_enabled
+        and top_score < settings.match_web_discovery_trigger_score
+    )
+    if should_discover:
+        try:
+            discovered = _web_discovery_service.discover_and_ingest(
+                db,
+                payload,
+                max_new=settings.match_web_discovery_max_new,
+            )
+            if discovered > 0:
+                result = _match_service.match_top_sponsors(db, payload, limit=5)
+        except Exception:
+            # Never fail sponsor matching due to optional discovery.
+            pass
+    return result
 
 
 @app.get("/sponsors", response_model=list[Sponsor])
