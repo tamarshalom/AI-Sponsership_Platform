@@ -1,0 +1,14 @@
+node_modules/
+.next/
+dist/
+build/
+*.pyc
+__pycache__/
+.pytest_cache/
+.mypy_cache/
+.venv/
+venv/
+.env
+frontend/.env.local
+backend/.env
+alembic/versions/__pycache__/

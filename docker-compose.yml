@@ -1,0 +1,57 @@
+version: "3.9"
+
+services:
+  db:
+    image: pgvector/pgvector:pg16
+    container_name: sponsorship-db
+    environment:
+      POSTGRES_USER: sponsorship
+      POSTGRES_PASSWORD: sponsorship
+      POSTGRES_DB: sponsorship
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sponsorship -d sponsorship"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  backend:
+    build:
+      context: ./backend
+    container_name: sponsorship-backend
+    environment:
+      APP_NAME: Sponsorship Platform API
+      APP_ENV: dev
+      DATABASE_URL: postgresql+psycopg://sponsorship:sponsorship@db:5432/sponsorship
+      FRONTEND_ORIGINS: http://localhost:3000,http://localhost:3001,http://localhost:3002
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend:/app
+    command: >
+      sh -c "alembic upgrade head &&
+             uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: sponsorship-frontend
+    environment:
+      BACKEND_INTERNAL_URL: http://backend:8000
+      NEXT_PUBLIC_API_BASE: /api/backend
+    depends_on:
+      - backend
+    ports:
+      - "3002:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+
+volumes:
+  pgdata:

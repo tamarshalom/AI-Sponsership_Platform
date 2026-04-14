@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 modules = ["nodejs-20"]
 [agent]
 expertMode = true
@@ -9,6 +10,16 @@ externalPort = 80
 [[ports]]
 localPort = 8000
 externalPort = 8000
+=======
+modules = ["python-3.12", "nodejs-20", "postgresql-16"]
+[nix]
+channel = "stable-25_05"
+packages = ["libxcrypt", "postgresql"]
+
+[agent]
+expertMode = true
+integrations = ["github:1.0.0"]
+>>>>>>> rianas-branch
 
 [workflows]
 runButton = "Project"
@@ -30,6 +41,7 @@ args = "Start application"
 name = "Backend API"
 author = "agent"
 
+<<<<<<< HEAD
 [workflows.workflow.metadata]
 outputType = "console"
 
@@ -38,6 +50,16 @@ task = "shell.exec"
 args = "cd backend && /home/runner/workspace/.pythonlibs/bin/python3 -m uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
 waitForPort = 8000
 
+=======
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "cd backend && uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
+waitForPort = 8000
+
+[workflows.workflow.metadata]
+outputType = "console"
+
+>>>>>>> rianas-branch
 [[workflows.workflow]]
 name = "Start application"
 author = "agent"
@@ -49,3 +71,14 @@ waitForPort = 5000
 
 [workflows.workflow.metadata]
 outputType = "webview"
+<<<<<<< HEAD
+=======
+
+[[ports]]
+localPort = 5000
+externalPort = 80
+
+[[ports]]
+localPort = 8000
+externalPort = 8000
+>>>>>>> rianas-branch
