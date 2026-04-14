@@ -94,10 +94,51 @@ class MatchSponsorsResult(AppSchema):
     mission: str
     description: Optional[str] = None
     score: float
+    reasons: Optional[List[str]] = None
+    suggested_activation: Optional[str] = Field(default=None, alias="suggestedActivation")
 
 
 class MatchSponsorsResponse(AppSchema):
     matches: List[MatchSponsorsResult]
+
+
+class SponsorIngestItem(AppSchema):
+    name: str = Field(min_length=2)
+    mission: str = Field(min_length=10)
+    description: Optional[str] = None
+    industries: List[str] = Field(default_factory=list)
+    support_types: List[str] = Field(default_factory=list, alias="supportTypes")
+    budget_min_cents: Optional[int] = Field(default=None, alias="budgetMinCents")
+    budget_max_cents: Optional[int] = Field(default=None, alias="budgetMaxCents")
+    contact_name: Optional[str] = Field(default=None, alias="contactName")
+    contact_email: Optional[str] = Field(default=None, alias="contactEmail")
+    website_url: Optional[str] = Field(default=None, alias="websiteUrl")
+    locations: List[str] = Field(default_factory=list)
+    metadata: Optional[Dict[str, Any]] = None
+    external_id: Optional[str] = Field(default=None, alias="externalId")
+
+
+class SponsorIngestRequest(AppSchema):
+    source: str = Field(
+        min_length=2,
+        description="Dataset/source name, e.g. 'hubspot-export' or 'csv-upload'.",
+    )
+    sponsors: List[SponsorIngestItem] = Field(min_length=1)
+    reembed_existing: bool = Field(default=False, alias="reembedExisting")
+
+
+class SponsorIngestResponse(AppSchema):
+    source: str
+    processed: int
+    created: int
+    updated: int
+    reembedded: int
+    sponsor_ids: List[str] = Field(alias="sponsorIds")
+
+
+class SponsorReembedResponse(AppSchema):
+    total_sponsors: int = Field(alias="totalSponsors")
+    reembedded: int
 
 
 class SponsorBrief(AppSchema):

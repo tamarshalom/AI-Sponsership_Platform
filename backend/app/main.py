@@ -18,8 +18,14 @@ from app.schemas import (
     EventStrategyAgentResponse,
     MatchSponsorsResponse,
     ProfileAgentRequest,
+    Sponsor,
+    SponsorIngestRequest,
+    SponsorIngestResponse,
+    SponsorReembedResponse,
 )
 from app.services.sponsor_match_service import SponsorMatchService
+from app.services.sponsor_ingestion_service import SponsorIngestionService
+from app.models import SponsorModel
 
 app = FastAPI(title=settings.app_name)
 
@@ -105,11 +111,30 @@ def parse_profile(payload: ProfileAgentRequest) -> ClubProfile:
 
 
 _match_service = SponsorMatchService()
+_ingestion_service = SponsorIngestionService()
 
 
 @app.post("/match-sponsors", response_model=MatchSponsorsResponse)
 def match_sponsors(payload: ClubProfile, db: Session = Depends(get_db)) -> MatchSponsorsResponse:
     return _match_service.match_top_sponsors(db, payload, limit=5)
+
+
+@app.get("/sponsors", response_model=list[Sponsor])
+def list_sponsors(db: Session = Depends(get_db), limit: int = 100) -> list[Sponsor]:
+    sponsors = db.query(SponsorModel).order_by(SponsorModel.updated_at.desc()).limit(limit).all()
+    return [Sponsor.model_validate(s) for s in sponsors]
+
+
+@app.post("/admin/sponsors/ingest", response_model=SponsorIngestResponse)
+def ingest_sponsors(
+    payload: SponsorIngestRequest, db: Session = Depends(get_db)
+) -> SponsorIngestResponse:
+    return _ingestion_service.ingest(db, payload)
+
+
+@app.post("/admin/sponsors/reembed", response_model=SponsorReembedResponse)
+def reembed_sponsors(db: Session = Depends(get_db)) -> SponsorReembedResponse:
+    return _ingestion_service.reembed_all(db)
 
 
 @app.post("/agents/event-strategy", response_model=EventStrategyAgentResponse)
